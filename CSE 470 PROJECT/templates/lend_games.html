@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Lend Games - Gaming Store{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <h3>🎮 Your Games Available to Lend</h3>
+        {% if purchased_games %}
+        <div class="list-group">
+            {% for game in purchased_games %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1">{{ game.title }}</h6>
+                    <small class="text-muted">{{ game.genre }}</small>
+                </div>
+                <a href="{{ url_for('lend_game', game_id=game.id) }}" class="btn btn-outline-primary btn-sm">Lend</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> You need to purchase games before you can lend them.
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-6">
+        <h3>📚 Games Available to Borrow</h3>
+        {% if available_lendings %}
+        <div class="list-group">
+            {% for lending in available_lendings %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1">{{ lending.game.title }}</h6>
+                    <small class="text-muted">Lent by {{ lending.lender.username }}</small>
+                </div>
+                <a href="{{ url_for('borrow_game', lending_id=lending.id) }}" class="btn btn-outline-success btn-sm">Borrow</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No games available for borrowing at the moment.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-5">
+    <h4>How Game Lending Works</h4>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-gamepad fa-3x text-primary mb-3"></i>
+                    <h6>1. Own the Game</h6>
+                    <p class="small">Purchase games from our store to add them to your library.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-handshake fa-3x text-success mb-3"></i>
+                    <h6>2. Lend to Community</h6>
+                    <p class="small">Make your games available for other players to borrow.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-users fa-3x text-info mb-3"></i>
+                    <h6>3. Build Community</h6>
+                    <p class="small">Help fellow gamers discover new titles and build friendships.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

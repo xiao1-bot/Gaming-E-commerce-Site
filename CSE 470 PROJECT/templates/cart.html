@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart - Gaming Store{% endblock %}
+
+{% block content %}
+<h2>🛒 Shopping Cart</h2>
+
+{% if cart_items %}
+<div class="row">
+    <div class="col-md-8">
+        {% for item in cart_items %}
+        <div class="card mb-3">
+            <div class="row g-0">
+                <div class="col-md-3">
+                    <img src="{{ item.game.image_url or '/placeholder.svg?height=150&width=200' }}" class="img-fluid rounded-start" alt="{{ item.game.title }}">
+                </div>
+                <div class="col-md-9">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.game.title }}</h5>
+                        <p class="card-text">{{ item.game.description[:100] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="h5 text-primary">${{ "%.2f"|format(item.game.price) }}</span>
+                                <span class="text-muted">x {{ item.quantity }}</span>
+                            </div>
+                            <div>
+                                <span class="h6">${{ "%.2f"|format(item.game.price * item.quantity) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Order Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Subtotal:</span>
+                    <span>${{ "%.2f"|format(total) }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Tax:</span>
+                    <span>${{ "%.2f"|format(total * 0.1) }}</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-3">
+                    <strong>Total:</strong>
+                    <strong>${{ "%.2f"|format(total * 1.1) }}</strong>
+                </div>
+                <a href="{{ url_for('checkout') }}" class="btn btn-success w-100">Proceed to Checkout</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-shopping-cart fa-5x text-muted mb-3"></i>
+    <h4>Your cart is empty</h4>
+    <p class="text-muted">Browse our games and add some to your cart!</p>
+    <a href="{{ url_for('games') }}" class="btn btn-primary">Browse Games</a>
+</div>
+{% endif %}
+{% endblock %}

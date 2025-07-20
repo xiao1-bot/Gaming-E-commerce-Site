@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Setup - Gaming Store{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>📝 Edit Your Setup</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Setup Title</label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ setup.title }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4">{{ setup.description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Setup Image</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        <div class="form-text">Upload a new photo to replace the current one (optional)</div>
+                        <img src="{{ setup.image_url }}" alt="Current Setup Image" class="img-fluid mt-2" style="max-height:200px;">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="{{ url_for('setups') }}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

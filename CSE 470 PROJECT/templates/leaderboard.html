@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - Gaming Store{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">🏆 Top Contributors Leaderboard</h2>
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>User</th>
+                                <th>Popularity Points</th>
+                                <th>Reviews</th>
+                                <th>Member Since</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr {% if current_user.is_authenticated and user.id == current_user.id %}class="table-warning"{% endif %}>
+                                <td>
+                                    {% if loop.index == 1 %}
+                                        🥇 {{ loop.index }}
+                                    {% elif loop.index == 2 %}
+                                        🥈 {{ loop.index }}
+                                    {% elif loop.index == 3 %}
+                                        🥉 {{ loop.index }}
+                                    {% else %}
+                                        {{ loop.index }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ user.username }}</strong>
+                                    {% if user.is_admin %}
+                                        <span class="badge bg-danger ms-2">Admin</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary fs-6">{{ user.popularity_points }}</span>
+                                </td>
+                                <td>{{ user.reviews|length }}</td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h5>How to Earn Popularity Points:</h5>
+            <ul class="list-group">
+                <li class="list-group-item">📝 Write a game review: <strong>+10 points</strong></li>
+                <li class="list-group-item">👍 Receive a like on your review: <strong>+2 points</strong></li>
+                <li class="list-group-item">💬 Engage with the community through comments</li>
+                <li class="list-group-item">🎮 Share your gaming setup in "Rate My Setup"</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

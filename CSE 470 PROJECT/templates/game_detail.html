@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}{{ game.title }} - Gaming Store{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <img src="{{ game.image_url or '/placeholder.svg?height=400&width=600' }}" class="img-fluid rounded" alt="{{ game.title }}">
+        
+        {% if game.voice_preview_url %}
+        <div class="mt-3">
+            <h6>🎵 Voice Preview</h6>
+            {% if 'youtube.com' in game.voice_preview_url or 'youtu.be' in game.voice_preview_url %}
+                {% set yt_id = (game.voice_preview_url.split('v=')[-1].split('&')[0] if 'v=' in game.voice_preview_url else game.voice_preview_url.split('/')[-1]) %}
+                <div class="ratio ratio-16x9">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ yt_id }}?autoplay=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            {% else %}
+                <audio controls class="w-100">
+                    <source src="{{ game.voice_preview_url }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-6">
+        <h1>{{ game.title }}</h1>
+        <p class="lead">{{ game.description }}</p>
+        
+        <div class="mb-3">
+            <span class="badge bg-primary me-2">{{ game.genre }}</span>
+            <span class="badge bg-secondary">{{ game.platform }}</span>
+        </div>
+        
+        <div class="mb-3">
+            <h3 class="text-primary">${{ "%.2f"|format(game.price) }}</h3>
+        </div>
+        
+        {% if current_user.is_authenticated %}
+        {% set already_owned = false %}
+        {% for purchase in current_user.purchases %}
+            {% if purchase.game_id == game.id %}
+                {% set already_owned = true %}
+            {% endif %}
+        {% endfor %}
+        <div class="mb-3">
+            {% if already_owned %}
+                <button class="btn btn-secondary btn-lg me-2" disabled>Already Owned</button>
+            {% else %}
+                <a href="{{ url_for('add_to_cart', game_id=game.id) }}" class="btn btn-primary btn-lg me-2">
+                    <i class="fas fa-cart-plus"></i> Add to Cart
+                </a>
+            {% endif %}
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                <i class="fas fa-star"></i> Write Review
+            </button>
+        </div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <h5>Game Reviews</h5>
+            {% for review in reviews %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>{{ review.user.username }}</strong>
+                            <div class="text-warning">
+                                {% for i in range(review.rating) %}★{% endfor %}
+                                {% for i in range(5 - review.rating) %}☆{% endfor %}
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                    <p class="mt-2">{{ review.content }}</p>
+                    
+                    {% if current_user.is_authenticated %}
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-sm btn-outline-success me-2" onclick="voteReview({{ review.id }}, 'like')">
+                            <i class="fas fa-thumbs-up"></i> {{ review.likes }}
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger me-3" onclick="voteReview({{ review.id }}, 'dislike')">
+                            <i class="fas fa-thumbs-down"></i> {{ review.dislikes }}
+                        </button>
+                        
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#comment-{{ review.id }}">
+                            <i class="fas fa-comment"></i> Comment
+                        </button>
+                    </div>
+                    
+                    <div class="collapse mt-3" id="comment-{{ review.id }}">
+                        <form method="POST" action="{{ url_for('comment_review') }}">
+                            <input type="hidden" name="review_id" value="{{ review.id }}">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="content" placeholder="Write a comment..." required>
+                                <button class="btn btn-primary" type="submit">Post</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    {% if review.comments %}
+                    <div class="mt-3">
+                        {% for comment in review.comments %}
+                        <div class="border-start border-3 border-light ps-3 mb-2">
+                            <small><strong>{{ comment.user.username }}</strong>: {{ comment.content }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+{% if current_user.is_authenticated %}
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Write a Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('review_game', game_id=game.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <select class="form-select" name="rating" required>
+                            <option value="">Select rating</option>
+                            <option value="1">1 Star</option>
+                            <option value="2">2 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="5">5 Stars</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Review</label>
+                        <textarea class="form-control" name="content" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function voteReview(reviewId, voteType) {
+    const formData = new FormData();
+    formData.append('review_id', reviewId);
+    formData.append('vote_type', voteType);
+    
+    fetch('/vote_review', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+</script>
+{% endblock %}
