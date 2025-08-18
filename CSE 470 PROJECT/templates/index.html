@@ -48,8 +48,13 @@
                     </div>
                     <div class="mt-2">
                         <a href="{{ url_for('game_detail', game_id=game.id) }}" class="btn btn-primary btn-sm">View Details</a>
-                        {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('add_to_cart', game_id=game.id) }}" class="btn btn-outline-primary btn-sm">Add to Cart</a>
+                        {% if current_user.is_authenticated and not current_user.is_admin %}
+                            {% set owned_game_ids = current_user.purchases | map(attribute='game_id') | list %}
+                            {% if game.id in owned_game_ids %}
+                                <button class="btn btn-outline-secondary btn-sm" disabled>Already Owned</button>
+                            {% else %}
+                                <a href="{{ url_for('add_to_cart', game_id=game.id) }}" class="btn btn-outline-primary btn-sm">Add to Cart</a>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>

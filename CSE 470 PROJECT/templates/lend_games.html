@@ -3,77 +3,383 @@
 {% block title %}Lend Games - Gaming Store{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6">
-        <h3>🎮 Your Games Available to Lend</h3>
-        {% if purchased_games %}
-        <div class="list-group">
-            {% for game in purchased_games %}
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-1">{{ game.title }}</h6>
-                    <small class="text-muted">{{ game.genre }}</small>
-                </div>
-                <a href="{{ url_for('lend_game', game_id=game.id) }}" class="btn btn-outline-primary btn-sm">Lend</a>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> You need to purchase games before you can lend them.
-        </div>
+<div class="container">
+    <h2 class="mb-4">🎮 Game Lending System</h2>
+    
+    <!-- Overdue Games Warning -->
+    {% set overdue_games = [] %}
+    {% for lending in user_lendings %}
+        {% if lending.borrower_id and not lending.is_returned and lending.is_overdue %}
+            {% set _ = overdue_games.append(lending) %}
         {% endif %}
+    {% endfor %}
+    
+    {% if overdue_games %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-danger border-danger">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div>
+                        <h5 class="alert-heading mb-2">⚠️ OVERDUE GAMES WARNING</h5>
+                        <p class="mb-2">You have <strong>{{ overdue_games|length }}</strong> overdue game(s) that need to be returned immediately!</p>
+                        <div class="mb-2">
+                            {% for lending in overdue_games %}
+                            <span class="badge bg-danger me-2">
+                                {{ lending.game.title }} - Due: {{ lending.return_date.strftime('%Y-%m-%d') }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        <p class="mb-0 text-danger"><strong>Failure to return these games may result in account suspension or banning.</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- User's Games Available to Lend -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Your PS3/PS4/PS5 Games Available to Lend</h5>
+                </div>
+                <div class="card-body">
+                    {% if ps_games %}
+                    <div class="row">
+                        {% for game in ps_games %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ game.title }}</h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            {{ game.platform }} • {{ game.genre }}
+                                        </small>
+                                    </p>
+                                    
+                                    {% set is_lent = false %}
+                                    {% set is_borrowed = false %}
+                                    {% set lending_id_to_delete = none %}
+                                    {% for lending in user_lendings %}
+                                        {% if lending.game_id == game.id %}
+                                            {% if lending.borrower_id and not lending.is_returned %}
+                                                {% set is_borrowed = true %}
+                                            {% elif not lending.borrower_id %}
+                                                {% set is_lent = true %}
+                                                {% set lending_id_to_delete = lending.id %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if is_lent %}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-success">Available for Lending</span>
+                                            <form action="{{ url_for('delete_lending', lending_id=lending_id_to_delete) }}" method="post" style="display: inline;">
+                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this lending post?')">
+                                                    <i class="fas fa-trash"></i> Delete Post
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% elif is_borrowed %}
+                                        <span class="badge bg-warning">Currently Borrowed</span>
+                                    {% else %}
+                                        <a href="{{ url_for('lend_game', game_id=game.id) }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-handshake"></i> Lend Game
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> You don't have any PS3, PS4, or PS5 games to lend. Purchase some games first!
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
     
-    <div class="col-md-6">
-        <h3>📚 Games Available to Borrow</h3>
-        {% if available_lendings %}
-        <div class="list-group">
-            {% for lending in available_lendings %}
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-1">{{ lending.game.title }}</h6>
-                    <small class="text-muted">Lent by {{ lending.lender.username }}</small>
+    <!-- Your Current Lending Posts -->
+    {% if user_lendings %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📤 Your Current Lending Posts</h5>
                 </div>
-                <a href="{{ url_for('borrow_game', lending_id=lending.id) }}" class="btn btn-outline-success btn-sm">Borrow</a>
+                <div class="card-body">
+                    <div class="row">
+                        {% for lending in user_lendings %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card {% if lending.borrower_id and not lending.is_returned %}border-warning{% else %}border-info{% endif %}">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ lending.game.title }}</h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            {{ lending.game.platform }} • {{ lending.game.genre }}
+                                        </small>
+                                    </p>
+                                    
+                                    {% if lending.borrower_id and not lending.is_returned %}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-warning">Currently Borrowed</span>
+                                            <small class="text-muted">
+                                                Borrowed by: {{ lending.borrower.username }}
+                                            </small>
+                                        </div>
+                                        <p class="card-text mt-2">
+                                            <small class="text-muted">
+                                                Return by: {{ lending.return_date.strftime('%Y-%m-%d') if lending.return_date else 'Not specified' }}
+                                            </small>
+                                        </p>
+                                    {% elif not lending.borrower_id %}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-success">Available for Borrowing</span>
+                                            <form action="{{ url_for('delete_lending', lending_id=lending.id) }}" method="post" style="display: inline;">
+                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this lending post?')">
+                                                    <i class="fas fa-trash"></i> Delete Post
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Returned</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> No games available for borrowing at the moment.
-        </div>
-        {% endif %}
     </div>
-</div>
-
-<div class="mt-5">
-    <h4>How Game Lending Works</h4>
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card text-center">
+    {% endif %}
+    
+    <!-- Returned Games Available to Re-lend -->
+    {% set returned_games = [] %}
+    {% for lending in user_lendings %}
+        {% if lending.is_returned %}
+            {% set _ = returned_games.append(lending.game) %}
+        {% endif %}
+    {% endfor %}
+    
+    {% if returned_games %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>🔄 Returned Games - Ready to Re-lend</h5>
+                </div>
                 <div class="card-body">
-                    <i class="fas fa-gamepad fa-3x text-primary mb-3"></i>
-                    <h6>1. Own the Game</h6>
-                    <p class="small">Purchase games from our store to add them to your library.</p>
+                    <div class="row">
+                        {% for game in returned_games %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-secondary">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ game.title }}</h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            {{ game.platform }} • {{ game.genre }}
+                                        </small>
+                                    </p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            This game was returned and is ready to be lent again
+                                        </small>
+                                    </p>
+                                    <a href="{{ url_for('lend_game', game_id=game.id) }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-redo"></i> Re-lend Game
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-center">
+    </div>
+    {% endif %}
+    
+    <!-- Games Currently Borrowed by Others -->
+    {% set borrowed_by_others = [] %}
+    {% for lending in user_lendings %}
+        {% if lending.borrower_id and not lending.is_returned %}
+            {% set _ = borrowed_by_others.append(lending) %}
+        {% endif %}
+    {% endfor %}
+    
+    {% if borrowed_by_others %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📤 Games Currently Borrowed by Others</h5>
+                </div>
                 <div class="card-body">
-                    <i class="fas fa-handshake fa-3x text-success mb-3"></i>
-                    <h6>2. Lend to Community</h6>
-                    <p class="small">Make your games available for other players to borrow.</p>
+                    <div class="row">
+                        {% for lending in borrowed_by_others %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ lending.game.title }}</h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            {{ lending.game.platform }} • {{ lending.game.genre }}
+                                        </small>
+                                    </p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Borrowed by: <strong>{{ lending.borrower.username }}</strong>
+                                        </small>
+                                    </p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Return by: {{ lending.return_date.strftime('%Y-%m-%d') if lending.return_date else 'Not specified' }}
+                                        </small>
+                                    </p>
+                                    <span class="badge bg-warning">Cannot be lent until returned</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-center">
+    </div>
+    {% endif %}
+    
+    <!-- Games Available to Borrow -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📚 Games Available to Borrow</h5>
+                </div>
                 <div class="card-body">
-                    <i class="fas fa-users fa-3x text-info mb-3"></i>
-                    <h6>3. Build Community</h6>
-                    <p class="small">Help fellow gamers discover new titles and build friendships.</p>
+                    {% if available_lendings %}
+                    <div class="row">
+                        {% for lending in available_lendings %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ lending.game.title }}</h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            {{ lending.game.platform }} • {{ lending.game.genre }}
+                                        </small>
+                                    </p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Lent by {{ lending.lender.username }}
+                                        </small>
+                                    </p>
+                                    <a href="{{ url_for('borrow_game', lending_id=lending.id) }}" class="btn btn-success btn-sm">Borrow Game</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No games available for borrowing at the moment.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Currently Borrowed Games -->
+    {% if borrowed_games %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📖 Games You're Currently Borrowing</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for lending in borrowed_games %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ lending.game.title }}</h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            {{ lending.game.platform }} • {{ lending.game.genre }}
+                                        </small>
+                                    </p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Lent by {{ lending.lender.username }}
+                                        </small>
+                                    </p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Return by: {{ lending.return_date.strftime('%Y-%m-%d') if lending.return_date else 'Not specified' }}
+                                        </small>
+                                    </p>
+                                    <form action="{{ url_for('return_game', lending_id=lending.id) }}" method="post" style="display: inline;">
+                                        <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Are you sure you want to return this game?')">
+                                            Return Game
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- How It Works -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>How Game Lending Works</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-gamepad fa-3x text-primary mb-3"></i>
+                                <h6>1. Own PS Games</h6>
+                                <p class="small">Purchase PS3, PS4, or PS5 games from our store.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-handshake fa-3x text-success mb-3"></i>
+                                <h6>2. Lend to Community</h6>
+                                <p class="small">Make your PS games available for other players to borrow.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-calendar fa-3x text-info mb-3"></i>
+                                <h6>3. Set Duration</h6>
+                                <p class="small">Borrowers select how long they want to borrow (1-30 days).</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-undo fa-3x text-warning mb-3"></i>
+                                <h6>4. Return & Repeat</h6>
+                                <p class="small">Games are returned and can be lent again to the community.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

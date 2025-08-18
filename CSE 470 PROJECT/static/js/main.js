@@ -10,13 +10,13 @@ document.addEventListener("DOMContentLoaded", () => {
   checkNotifications()
 
   // Auto-hide alerts after 5 seconds
-  setTimeout(() => {
-    var alerts = document.querySelectorAll(".alert")
-    alerts.forEach((alert) => {
-      var bsAlert = new bootstrap.Alert(alert)
-      bsAlert.close()
-    })
-  }, 5000)
+  // setTimeout(() => {
+  //   var alerts = document.querySelectorAll(".alert")
+  //   alerts.forEach((alert) => {
+  //     var bsAlert = new bootstrap.Alert(alert)
+  //     bsAlert.close()
+  //   })
+  // }, 5000)
 })
 
 // Check for unread notifications

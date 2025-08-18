@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Select Borrowing Duration - Gaming Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Select Borrowing Duration</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h5>{{ lending.game.title }}</h5>
+                        <p class="text-muted">Lent by {{ lending.lender.username }}</p>
+                        <p class="text-muted">{{ lending.game.platform }} • {{ lending.game.genre }}</p>
+                    </div>
+                    
+                    <form action="{{ url_for('process_borrow', lending_id=lending.id) }}" method="post">
+                        <div class="mb-3">
+                            <label for="duration_days" class="form-label">How many days would you like to borrow this game?</label>
+                            <select class="form-select" name="duration_days" id="duration_days" required>
+                                <option value="">Select duration</option>
+                                {% for days in range(1, 31) %}
+                                <option value="{{ days }}">{{ days }} day{% if days != 1 %}s{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">Confirm Borrow</button>
+                            <a href="{{ url_for('lend_games') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

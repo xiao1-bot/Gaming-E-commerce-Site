@@ -29,7 +29,14 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="genre" class="form-label">Genre</label>
-                                <input type="text" class="form-control" id="genre" name="genre" value="" required>
+                                <select class="form-select" id="genre" name="genre" multiple required>
+                                    <option value="Action">Action</option>
+                                    <option value="Adventure">Adventure</option>
+                                    <option value="RPG">RPG</option>
+                                    <option value="Strategy">Strategy</option>
+                                    <option value="Sports">Sports</option>
+                                </select>
+                                <small class="form-text text-muted">Hold Ctrl (Windows) or Command (Mac) to select multiple genres.</small>
                             </div>
                         </div>
                         <div class="col-md-6">

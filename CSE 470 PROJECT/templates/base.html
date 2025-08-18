@@ -50,14 +50,20 @@
                             <i class="fas fa-shopping-cart"></i> Cart
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user_notifications') }}">
+                            <i class="fas fa-bell"></i> Notifications
+                            <span class="badge bg-danger notification-badge" id="notificationBadge" style="display: none;"></span>
+                        </a>
+                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user"></i> {{ current_user.username }}
-                            <span class="badge bg-danger notification-badge" id="notificationBadge" style="display: none;"></span>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('edit_profile') }}">Edit Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user_notifications') }}">Notifications</a></li>
                             {% if current_user.is_admin %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin') }}">Admin Panel</a></li>

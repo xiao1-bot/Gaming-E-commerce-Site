@@ -29,19 +29,38 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="genre" class="form-label">Genre</label>
-                                <input type="text" class="form-control" id="genre" name="genre" value="{{ game.genre }}" disabled>
+                                {% set selected_genres = game.genre.split(',') if game.genre else [] %}
+                                <select class="form-select" id="genre" name="genre" multiple required>
+                                    <option value="Action" {% if 'Action' in selected_genres %}selected{% endif %}>Action</option>
+                                    <option value="Adventure" {% if 'Adventure' in selected_genres %}selected{% endif %}>Adventure</option>
+                                    <option value="RPG" {% if 'RPG' in selected_genres %}selected{% endif %}>RPG</option>
+                                    <option value="Strategy" {% if 'Strategy' in selected_genres %}selected{% endif %}>Strategy</option>
+                                    <option value="Sports" {% if 'Sports' in selected_genres %}selected{% endif %}>Sports</option>
+                                </select>
+                                <small class="form-text text-muted">Hold Ctrl (Windows) or Command (Mac) to select multiple genres.</small>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="platform" class="form-label">Platform</label>
-                                <input type="text" class="form-control" id="platform" name="platform" value="{{ game.platform }}" disabled>
+                                <input type="text" class="form-control" id="platform" name="platform" value="{{ game.platform }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="is_available" class="form-label">Status</label>
+                                <select class="form-select" id="is_available" name="is_available" required>
+                                    <option value="True" {% if game.is_available %}selected{% endif %}>Available</option>
+                                    <option value="False" {% if not game.is_available %}selected{% endif %}>Not Available</option>
+                                </select>
                             </div>
                         </div>
                     </div>
                     <div class="mb-3">
                         <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="4" disabled>{{ game.description }}</textarea>
+                        <textarea class="form-control" id="description" name="description" rows="4">{{ game.description }}</textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-6">

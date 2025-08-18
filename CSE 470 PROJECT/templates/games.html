@@ -6,14 +6,16 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>All Games</h2>
     <div>
-        <select class="form-select" onchange="filterGames(this.value)">
-            <option value="">All Genres</option>
-            <option value="Action">Action</option>
-            <option value="Adventure">Adventure</option>
-            <option value="RPG">RPG</option>
-            <option value="Strategy">Strategy</option>
-            <option value="Sports">Sports</option>
-        </select>
+        <form method="get" action="{{ url_for('games') }}" class="d-inline">
+            <select class="form-select d-inline w-auto" name="genre" onchange="this.form.submit()">
+                <option value="" {% if not request.args.get('genre') %}selected{% endif %}>All Genres</option>
+                <option value="Action" {% if request.args.get('genre') == 'Action' %}selected{% endif %}>Action</option>
+                <option value="Adventure" {% if request.args.get('genre') == 'Adventure' %}selected{% endif %}>Adventure</option>
+                <option value="RPG" {% if request.args.get('genre') == 'RPG' %}selected{% endif %}>RPG</option>
+                <option value="Strategy" {% if request.args.get('genre') == 'Strategy' %}selected{% endif %}>Strategy</option>
+                <option value="Sports" {% if request.args.get('genre') == 'Sports' %}selected{% endif %}>Sports</option>
+            </select>
+        </form>
     </div>
 </div>
 
@@ -35,7 +37,7 @@
                     </div>
                     <div class="d-grid gap-2">
                         <a href="{{ url_for('game_detail', game_id=game.id) }}" class="btn btn-primary">View Details</a>
-                        {% if current_user.is_authenticated %}
+                        {% if current_user.is_authenticated and not current_user.is_admin %}
                             {% if game.id in owned_game_ids %}
                                 <button class="btn btn-outline-secondary" disabled>Already Owned</button>
                             {% else %}

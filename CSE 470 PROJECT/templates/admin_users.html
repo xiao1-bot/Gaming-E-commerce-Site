@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - User Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">User Management</h1>
+    
+    <!-- Overdue Games Summary -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Overdue Games Summary
+                        <span class="badge bg-danger ms-2">{{ overdue_count }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">Total overdue games: <strong>{{ overdue_count }}</strong></p>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('admin_check_overdue') }}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-sync"></i> Check for Overdue Games
+                        </a>
+                        <a href="{{ url_for('admin_check_expired_bans') }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-user-check"></i> Check Expired Bans
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overdue Users Section -->
+    {% if overdue_users %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-times"></i> Users with Overdue Games
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for overdue_user in overdue_users %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">
+                                    <strong>{{ overdue_user.user.username }}</strong>
+                                    <span class="badge bg-danger ms-2">{{ overdue_user.overdue_count }} overdue</span>
+                                </h6>
+                                <p class="text-muted mb-2">{{ overdue_user.user.email }}</p>
+                                <div class="small">
+                                    <strong>Overdue Games:</strong>
+                                    {% for lending in overdue_user.overdue_games %}
+                                    <span class="badge bg-warning text-dark me-1">
+                                        {{ lending.game.title }} (Due: {{ lending.return_date.strftime('%Y-%m-%d') }})
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                {% if overdue_user.user.is_banned %}
+                                <span class="badge bg-dark mb-2">BANNED</span><br>
+                                <form action="{{ url_for('admin_unban_user', user_id=overdue_user.user.id) }}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="fas fa-user-check"></i> Unban
+                                    </button>
+                                </form>
+                                {% else %}
+                                <a href="{{ url_for('admin_ban_user_page', user_id=overdue_user.user.id) }}" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-user-times"></i> Ban User
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- All Users Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users"></i> All Users
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ user.username }}</strong>
+                                        {% if user.is_banned %}
+                                        <span class="badge bg-dark ms-2">BANNED</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        {% if user.is_banned %}
+                                            <span class="text-danger">Banned</span>
+                                            {% if user.ban_duration_days %}
+                                                <br><small class="text-muted">{{ user.ban_duration_days }} days</small>
+                                                {% if user.banned_at %}
+                                                    <br><small class="text-muted">Until: {{ (user.banned_at + timedelta(days=user.ban_duration_days)).strftime('%Y-%m-%d') }}</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <br><small class="text-muted">Permanent</small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-success">Active</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.is_admin %}
+                                        <span class="badge bg-primary">Admin</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">User</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% if not user.is_admin %}
+                                            {% if user.is_banned %}
+                                            <form action="{{ url_for('admin_unban_user', user_id=user.id) }}" method="post" style="display: inline;">
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-user-check"></i> Unban
+                                                </button>
+                                            </form>
+                                            {% else %}
+                                            <a href="{{ url_for('admin_ban_user_page', user_id=user.id) }}" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-user-times"></i> Ban
+                                            </a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation -->
+<div class="container mt-4 mb-4">
+    <div class="row">
+        <div class="col-md-12">
+            <a href="{{ url_for('admin') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Admin Dashboard
+            </a>
+            <a href="{{ url_for('admin_notifications') }}" class="btn btn-info">
+                <i class="fas fa-bell"></i> View Admin Notifications
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

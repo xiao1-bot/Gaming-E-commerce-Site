@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Redeem Vouchers - Gaming Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Redeem Vouchers</h2>
+                <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">Your Popularity Points</h5>
+                    <div class="display-4 text-primary mb-2">{{ current_user.popularity_points }}</div>
+                    <p class="text-muted">Available points for redeeming vouchers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <h5 class="mb-0">Small Voucher</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-6 text-primary mb-3">$5.00</div>
+                    <p class="card-text">Get $5.00 off your next purchase</p>
+                    <div class="mb-3">
+                        <span class="badge bg-secondary fs-6">Cost: 50 points</span>
+                    </div>
+                    <form action="{{ url_for('redeem_voucher') }}" method="post">
+                        <input type="hidden" name="voucher_type" value="small">
+                        <button type="submit" class="btn btn-primary btn-lg w-100" 
+                                {% if current_user.popularity_points < 50 %}disabled{% endif %}>
+                            {% if current_user.popularity_points >= 50 %}
+                                <i class="fas fa-gift"></i> Redeem Voucher
+                            {% else %}
+                                <i class="fas fa-lock"></i> Not Enough Points
+                            {% endif %}
+                        </button>
+                    </form>
+                    {% if current_user.popularity_points < 50 %}
+                    <small class="text-muted d-block mt-2">
+                        Need {{ 50 - current_user.popularity_points }} more points
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-success">
+                <div class="card-header bg-success text-white text-center">
+                    <h5 class="mb-0">Medium Voucher</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-6 text-success mb-3">$12.00</div>
+                    <p class="card-text">Get $12.00 off your next purchase</p>
+                    <div class="mb-3">
+                        <span class="badge bg-secondary fs-6">Cost: 100 points</span>
+                    </div>
+                    <form action="{{ url_for('redeem_voucher') }}" method="post">
+                        <input type="hidden" name="voucher_type" value="medium">
+                        <button type="submit" class="btn btn-success btn-lg w-100" 
+                                {% if current_user.popularity_points < 100 %}disabled{% endif %}>
+                            {% if current_user.popularity_points >= 100 %}
+                                <i class="fas fa-gift"></i> Redeem Voucher
+                            {% else %}
+                                <i class="fas fa-lock"></i> Not Enough Points
+                            {% endif %}
+                        </button>
+                    </form>
+                    {% if current_user.popularity_points < 100 %}
+                    <small class="text-muted d-block mt-2">
+                        Need {{ 100 - current_user.popularity_points }} more points
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-warning">
+                <div class="card-header bg-warning text-white text-center">
+                    <h5 class="mb-0">Large Voucher</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-6 text-warning mb-3">$25.00</div>
+                    <p class="card-text">Get $25.00 off your next purchase</p>
+                    <div class="mb-3">
+                        <span class="badge bg-secondary fs-6">Cost: 200 points</span>
+                    </div>
+                    <form action="{{ url_for('redeem_voucher') }}" method="post">
+                        <input type="hidden" name="voucher_type" value="large">
+                        <button type="submit" class="btn btn-warning btn-lg w-100" 
+                                {% if current_user.popularity_points < 200 %}disabled{% endif %}>
+                            {% if current_user.popularity_points >= 200 %}
+                                <i class="fas fa-gift"></i> Redeem Voucher
+                            {% else %}
+                                <i class="fas fa-lock"></i> Not Enough Points
+                            {% endif %}
+                        </button>
+                    </form>
+                    {% if current_user.popularity_points < 200 %}
+                    <small class="text-muted d-block mt-2">
+                        Need {{ 200 - current_user.popularity_points }} more points
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>How to Earn More Points</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-star text-warning"></i> Write Reviews</h6>
+                            <p class="text-muted">Earn 10 points for each game review you write</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-thumbs-up text-primary"></i> Get Liked</h6>
+                            <p class="text-muted">Earn 2 points when someone likes your review</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

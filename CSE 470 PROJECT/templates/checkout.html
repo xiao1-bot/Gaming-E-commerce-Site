@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - Gaming Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Checkout</h2>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in cart_items %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="mb-0">{{ item.game.title }}</h6>
+                            <small class="text-muted">{{ item.game.platform }} • {{ item.game.genre }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-bold">${{ "%.2f"|format(item.game.price) }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5>Total:</h5>
+                        <h5 class="text-primary">${{ "%.2f"|format(total) }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Payment</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('process_checkout') }}" method="post">
+                        {% if active_vouchers %}
+                            <div class="mb-3">
+                                <label for="voucher_id" class="form-label">Apply voucher (optional):</label>
+                                <select class="form-select" name="voucher_id" id="voucher_id">
+                                    <option value="">No voucher</option>
+                                    {% for voucher in active_vouchers %}
+                                    <option value="{{ voucher.id }}" data-amount="{{ voucher.discount_amount }}">
+                                        ${{ "%.2f"|format(voucher.discount_amount) }} off
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div id="voucher-preview" class="alert alert-info" style="display: none;">
+                                <strong>Discount:</strong> <span id="discount-amount">$0.00</span><br>
+                                <strong>Final Total:</strong> <span id="final-total">${{ "%.2f"|format(total) }}</span>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-secondary">
+                                You don't have any vouchers available. You can still complete your purchase normally.
+                            </div>
+                            <!-- Keep a placeholder input so backend receives the field consistently -->
+                            <input type="hidden" name="voucher_id" value="">
+                        {% endif %}
+                        
+                        <button type="submit" class="btn btn-success w-100">Complete Purchase</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6>Need a voucher?</h6>
+                    <p class="small text-muted">Redeem vouchers using your popularity points.</p>
+                    <a href="{{ url_for('redeem_vouchers_page') }}" class="btn btn-outline-secondary btn-sm">Redeem Vouchers</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const voucherSelect = document.getElementById('voucher_id');
+if (voucherSelect) {
+  voucherSelect.addEventListener('change', function() {
+      const selectedOption = this.options[this.selectedIndex];
+      const preview = document.getElementById('voucher-preview');
+      const discountAmount = document.getElementById('discount-amount');
+      const finalTotal = document.getElementById('final-total');
+      
+      if (this.value) {
+          const discount = parseFloat(selectedOption.dataset.amount);
+          const total = {{ total }};
+          const final = Math.max(0, total - discount);
+          
+          discountAmount.textContent = `$${discount.toFixed(2)}`;
+          finalTotal.textContent = `$${final.toFixed(2)}`;
+          preview.style.display = 'block';
+      } else {
+          preview.style.display = 'none';
+      }
+  });
+}
+</script>
+{% endblock %}

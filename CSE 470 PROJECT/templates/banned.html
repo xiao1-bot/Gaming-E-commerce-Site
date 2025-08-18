@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Account Banned{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+          <h3 class="mb-0"><i class="fas fa-user-lock me-2"></i>Account Banned</h3>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-danger">
+            <strong>{{ user.username }}</strong>, your account is currently banned and you cannot access the site.
+          </div>
+
+          <h5 class="mb-3">Ban Details</h5>
+          <ul class="list-group mb-4">
+            <li class="list-group-item">
+              <strong>Status:</strong>
+              {% if is_permanent %}
+                Permanent Ban
+              {% else %}
+                Temporary Ban
+              {% endif %}
+            </li>
+            {% if not is_permanent %}
+            <li class="list-group-item">
+              <strong>Remaining Days:</strong>
+              {{ remaining_days }} day(s)
+            </li>
+            <li class="list-group-item">
+              <strong>Ban Ends On:</strong>
+              {{ until_date }}
+            </li>
+            {% endif %}
+            <li class="list-group-item">
+              <strong>Reason:</strong>
+              {{ reason }}
+            </li>
+          </ul>
+
+          <div class="alert alert-info">
+            If you believe this is a mistake, please contact support or the site administrator.
+          </div>
+
+          <a href="{{ url_for('logout') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Home
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

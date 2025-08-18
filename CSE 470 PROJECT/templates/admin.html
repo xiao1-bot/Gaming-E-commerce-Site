@@ -39,6 +39,11 @@
                                 </td>
                                 <td>
                                     <a href="{{ url_for('edit_game', game_id=game.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                    {% if not game.is_available and notify_counts[game.id] > 0 %}
+                                        <form action="{{ url_for('admin_notify_users', game_id=game.id) }}" method="post" style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-info ms-2">Notify Users ({{ notify_counts[game.id] }})</button>
+                                        </form>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
@@ -96,19 +101,19 @@
                     </button>
                 </div>
                 <div class="col-md-3">
-                    <a href="{{ url_for('add_game') }}" class="btn btn-success w-100">
-                        <i class="fas fa-plus"></i><br>Add New Game
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-primary w-100">
+                        <i class="fas fa-users"></i><br>Manage Users
                     </a>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-warning w-100">
-                        <i class="fas fa-chart-bar"></i><br>View Analytics
-                    </button>
+                    <a href="{{ url_for('admin_notifications') }}" class="btn btn-warning w-100">
+                        <i class="fas fa-bell"></i><br>View Notifications
+                    </a>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-secondary w-100">
-                        <i class="fas fa-cog"></i><br>System Settings
-                    </button>
+                    <a href="{{ url_for('admin_check_overdue') }}" class="btn btn-danger w-100">
+                        <i class="fas fa-exclamation-triangle"></i><br>Check Overdue Games
+                    </a>
                 </div>
             </div>
         </div>
