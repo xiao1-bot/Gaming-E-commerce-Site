@@ -789,7 +789,7 @@ def review_game(game_id):
         )
         db.session.add(review)
         # Award popularity points
-        current_user.popularity_points += 10
+        current_user.popularity_points += 50
     db.session.commit()
     flash('Review submitted successfully')
     return redirect(url_for('game_detail', game_id=game_id))
@@ -832,7 +832,7 @@ def vote_review():
     
     # Award points to review author
     if vote_type == 'like':
-        review.user.popularity_points += 2
+        review.user.popularity_points += 5
     
     # Create notification
     if review.user_id != current_user.id:
@@ -1151,51 +1151,97 @@ def vote_setup():
     setup_id = int(request.form['setup_id'])
     vote_type = request.form['vote_type']
     
-    existing_vote = SetupVote.query.filter_by(user_id=current_user.id, setup_id=setup_id).first()
     setup = SetupPost.query.get(setup_id)
-    
-    if existing_vote:
-        # Remove old vote
-        if existing_vote.vote_type == 'like':
-            setup.likes -= 1
-        elif existing_vote.vote_type == 'dislike':
-            setup.dislikes -= 1
-        elif existing_vote.vote_type == 'cleanest':
-            setup.cleanest_votes -= 1
-        elif existing_vote.vote_type == 'rgb':
-            setup.rgb_votes -= 1
-        elif existing_vote.vote_type == 'budget':
-            setup.budget_votes -= 1
-        
-        if existing_vote.vote_type == vote_type:
-            db.session.delete(existing_vote)
+    if not setup:
+        return jsonify({'success': False, 'message': 'Setup not found'}), 404
+
+    # Initialize counters to 0 if somehow None
+    setup.likes = setup.likes or 0
+    setup.dislikes = setup.dislikes or 0
+    setup.cleanest_votes = setup.cleanest_votes or 0
+    setup.rgb_votes = setup.rgb_votes or 0
+    setup.budget_votes = setup.budget_votes or 0
+
+    reaction_types = ['like', 'dislike']
+    badge_types = ['cleanest', 'rgb', 'budget']
+
+    def clamp_non_negative(value: int) -> int:
+        return value if value > 0 else 0
+
+    if vote_type in reaction_types:
+        # Handle like/dislike independently from badges
+        existing_reaction = SetupVote.query.filter(
+            SetupVote.user_id == current_user.id,
+            SetupVote.setup_id == setup_id,
+            SetupVote.vote_type.in_(reaction_types)
+        ).first()
+
+        if existing_reaction:
+            # remove previous reaction
+            if existing_reaction.vote_type == 'like':
+                setup.likes = clamp_non_negative(setup.likes - 1)
+            elif existing_reaction.vote_type == 'dislike':
+                setup.dislikes = clamp_non_negative(setup.dislikes - 1)
+
+            if existing_reaction.vote_type == vote_type:
+                # toggle off
+                db.session.delete(existing_reaction)
+            else:
+                # switch reaction
+                existing_reaction.vote_type = vote_type
+                if vote_type == 'like':
+                    setup.likes += 1
+                else:
+                    setup.dislikes += 1
         else:
-            existing_vote.vote_type = vote_type
+            # new reaction
+            db.session.add(SetupVote(user_id=current_user.id, setup_id=setup_id, vote_type=vote_type))
             if vote_type == 'like':
                 setup.likes += 1
-            elif vote_type == 'dislike':
+            else:
                 setup.dislikes += 1
-            elif vote_type == 'cleanest':
+
+    elif vote_type in badge_types:
+        # Handle cleanest/rgb/budget independently from reactions
+        existing_badge = SetupVote.query.filter(
+            SetupVote.user_id == current_user.id,
+            SetupVote.setup_id == setup_id,
+            SetupVote.vote_type.in_(badge_types)
+        ).first()
+
+        if existing_badge:
+            # remove previous badge vote
+            if existing_badge.vote_type == 'cleanest':
+                setup.cleanest_votes = clamp_non_negative(setup.cleanest_votes - 1)
+            elif existing_badge.vote_type == 'rgb':
+                setup.rgb_votes = clamp_non_negative(setup.rgb_votes - 1)
+            elif existing_badge.vote_type == 'budget':
+                setup.budget_votes = clamp_non_negative(setup.budget_votes - 1)
+
+            if existing_badge.vote_type == vote_type:
+                # toggle off
+                db.session.delete(existing_badge)
+            else:
+                # switch badge vote
+                existing_badge.vote_type = vote_type
+                if vote_type == 'cleanest':
+                    setup.cleanest_votes += 1
+                elif vote_type == 'rgb':
+                    setup.rgb_votes += 1
+                else:
+                    setup.budget_votes += 1
+        else:
+            # new badge vote
+            db.session.add(SetupVote(user_id=current_user.id, setup_id=setup_id, vote_type=vote_type))
+            if vote_type == 'cleanest':
                 setup.cleanest_votes += 1
             elif vote_type == 'rgb':
                 setup.rgb_votes += 1
-            elif vote_type == 'budget':
+            else:
                 setup.budget_votes += 1
     else:
-        vote = SetupVote(user_id=current_user.id, setup_id=setup_id, vote_type=vote_type)
-        db.session.add(vote)
-        
-        if vote_type == 'like':
-            setup.likes += 1
-        elif vote_type == 'dislike':
-            setup.dislikes += 1
-        elif vote_type == 'cleanest':
-            setup.cleanest_votes += 1
-        elif vote_type == 'rgb':
-            setup.rgb_votes += 1
-        elif vote_type == 'budget':
-            setup.budget_votes += 1
-    
+        return jsonify({'success': False, 'message': 'Invalid vote type'}), 400
+
     db.session.commit()
     return jsonify({'success': True})
 
