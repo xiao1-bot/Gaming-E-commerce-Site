@@ -40,15 +40,17 @@
 <div class="mt-5">
     <div class="card bg-light">
         <div class="card-body">
-            <h5><i class="fas fa-lightbulb text-warning"></i> How Our AI Works</h5>
-            <p>Our recommendation system analyzes:</p>
+            <h5><i class="fas fa-lightbulb text-warning"></i> How Our Enhanced AI Works</h5>
+            <p>Our smart recommendation system analyzes:</p>
             <ul>
-                <li>Your purchase history and preferred genres</li>
-                <li>Games you've rated highly in reviews</li>
-                <li>Popular games in your favorite categories</li>
-                <li>Community trends and ratings</li>
+                <li><strong>Multi-genre analysis:</strong> Extracts all genre tags from your purchased games (e.g., "Action,Adventure,Sports")</li>
+                <li><strong>Preference scoring:</strong> Identifies games that share any genre tags with your favorites</li>
+                <li><strong>Review insights:</strong> Considers games you've rated 4+ stars to understand your taste</li>
+                <li><strong>Diversity constraint:</strong> Limits to max 2 games per genre for variety</li>
+                <li><strong>Smart matching:</strong> Recommends games with the highest genre overlap score</li>
+                <li><strong>Fallback system:</strong> Shows popular games if you're new to the platform</li>
             </ul>
-            <p class="mb-0">The more you interact with games (purchase, review, rate), the better our recommendations become!</p>
+            <p class="mb-0"><strong>Example:</strong> If you bought "Action,Adventure" games, we'll recommend max 2 Action games, max 2 Adventure games, and max 2 games with both tags for a diverse selection!</p>
         </div>
     </div>
 </div>

@@ -14,6 +14,17 @@
                 <option value="RPG" {% if request.args.get('genre') == 'RPG' %}selected{% endif %}>RPG</option>
                 <option value="Strategy" {% if request.args.get('genre') == 'Strategy' %}selected{% endif %}>Strategy</option>
                 <option value="Sports" {% if request.args.get('genre') == 'Sports' %}selected{% endif %}>Sports</option>
+                <option value="Puzzle" {% if request.args.get('genre') == 'Puzzle' %}selected{% endif %}>Puzzle</option>
+                <option value="Simulation" {% if request.args.get('genre') == 'Simulation' %}selected{% endif %}>Simulation</option>
+                <option value="Horror" {% if 'Horror' in selected_genres %}selected{% endif %}>Horror</option>
+                                    
+                <option value="Racing" {% if 'Racing' in selected_genres %}selected{% endif %}>Racing</option>
+                <option value="Shooting" {% if 'Shooter' in selected_genres %}selected{% endif %}>Shooting</option>
+                                    
+                <option value="Stealth" {% if 'Stealth' in selected_genres %}selected{% endif %}>Stealth</option>
+                <option value="Survival" {% if 'Survival' in selected_genres %}selected{% endif %}>Survival</option>
+                <option value="Visual Novel" {% if 'Visual Novel' in selected_genres %}selected{% endif %}>Visual Novel</option>
+                <option value="Other" {% if 'Other' in selected_genres %}selected{% endif %}>Other</option>
             </select>
         </form>
     </div>
@@ -57,7 +68,7 @@
     <ul class="pagination justify-content-center">
         {% if games.has_prev %}
         <li class="page-item">
-            <a class="page-link" href="{{ url_for('games', page=games.prev_num) }}">Previous</a>
+            <a class="page-link" href="{{ url_for('games', page=games.prev_num, genre=request.args.get('genre', '')) }}">Previous</a>
         </li>
         {% endif %}
         
@@ -65,7 +76,7 @@
             {% if page_num %}
                 {% if page_num != games.page %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('games', page=page_num) }}">{{ page_num }}</a>
+                    <a class="page-link" href="{{ url_for('games', page=page_num, genre=request.args.get('genre', '')) }}">{{ page_num }}</a>
                 </li>
                 {% else %}
                 <li class="page-item active">
@@ -77,7 +88,7 @@
         
         {% if games.has_next %}
         <li class="page-item">
-            <a class="page-link" href="{{ url_for('games', page=games.next_num) }}">Next</a>
+            <a class="page-link" href="{{ url_for('games', page=games.next_num, genre=request.args.get('genre', '')) }}">Next</a>
         </li>
         {% endif %}
     </ul>

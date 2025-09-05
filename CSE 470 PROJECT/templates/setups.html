@@ -54,6 +54,11 @@
                     <button class="btn btn-danger btn-sm" onclick="voteSetup({{ setup.id }}, 'dislike')">
                         <i class="fas fa-thumbs-down"></i> {{ setup.dislikes }}
                     </button>
+                    {% if current_user.is_authenticated and (current_user.is_admin or current_user.id == setup.user_id) %}
+                    <form method="POST" action="{{ url_for('delete_setup', setup_id=setup.id) }}" onsubmit="return confirm('Delete this setup? This cannot be undone.');">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                    </form>
+                    {% endif %}
                 </div>
                 {% else %}
                 <div class="row mb-3">
