@@ -1527,6 +1527,35 @@ def admin_check_expired_bans():
     
     return redirect(url_for('admin_users'))
 
+@app.route('/admin/send_global_notification', methods=['POST'])
+@login_required
+def send_global_notification():
+    if not current_user.is_admin:
+        flash('Access denied')
+        return redirect(url_for('index'))
+    
+    message = request.form.get('message', '').strip()
+    if not message:
+        flash('Please enter a message for the notification')
+        return redirect(url_for('admin'))
+    
+    # Get all non-banned users
+    users = User.query.filter_by(is_banned=False).all()
+    
+    # Create notification for each user
+    for user in users:
+        notification = Notification(
+            user_id=user.id,
+            title='Global Notification',
+            message=message,
+            notification_type='general'
+        )
+        db.session.add(notification)
+    
+    db.session.commit()
+    flash(f'Global notification sent to {len(users)} users')
+    return redirect(url_for('admin'))
+
 @app.route('/notifications')
 @login_required
 def user_notifications():

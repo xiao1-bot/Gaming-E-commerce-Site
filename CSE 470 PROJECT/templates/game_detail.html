@@ -45,7 +45,6 @@
         {% if not game.is_available %}
             <div class="alert alert-warning">This game is not available for the moment. We will update you when the game is available.</div>
             {% if current_user.is_authenticated and not current_user.is_admin %}
-                {% set notify_requested = NotifyRequest.query.filter_by(user_id=current_user.id, game_id=game.id).first() %}
                 {% if not notify_requested %}
                     <form action="{{ url_for('notify_when_available', game_id=game.id) }}" method="post">
                         <button type="submit" class="btn btn-outline-info">Notify when the game is available</button>

@@ -123,9 +123,20 @@
 <script>
 function sendGlobalNotification() {
     const message = prompt("Enter notification message for all users:");
-    if (message) {
-        // This would typically send a request to create notifications for all users
-        alert("Global notification sent!");
+    if (message && message.trim()) {
+        // Create a form and submit it to send the notification
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("send_global_notification") }}';
+        
+        const messageInput = document.createElement('input');
+        messageInput.type = 'hidden';
+        messageInput.name = 'message';
+        messageInput.value = message.trim();
+        
+        form.appendChild(messageInput);
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>
